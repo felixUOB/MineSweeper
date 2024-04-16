@@ -22,8 +22,9 @@ class Tile():
         self.sprite = new
 
     def drawSprite(self, screen):
-        sprite = pygame.image.load("sprites/" + self.sprite + ".png").convert_alpha()
-        screen.blit( sprite, (self.x*32, self.y*32))
+        img = pygame.image.load("sprites/" + self.sprite + ".png").convert_alpha()
+        screen.blit( img, (self.x*32, self.y*32))
+        print(self.sprite)
 
     def reveal(self):
         self.revealed = True
@@ -34,10 +35,12 @@ class Tile():
         else:
             self.sprite = "bg"
 
+        print(self.sprite)
+
     
 
 
-def printBoard(screen):
+def printBoard(screen, board):
     pygame.display.set_caption('Minesweeper')
     # tile = pygame.image.load("sprites/tile.png").convert_alpha()
 
@@ -47,14 +50,26 @@ def printBoard(screen):
     #     for y in range(BOARDHEIGHT):
     #         screen.blit( tile, (x*32, y*32))
 
-    tile = Tile(0, 0)
-    tile.drawSprite(screen)
+    
+
+    for i in range(BOARDHEIGHT):
+        row = []
+        for j in range(BOARDWIDTH):
+            row.append(Tile(j, i))
+            row[j].drawSprite(screen)
+        board.append(row)
+
+    
+
+    # tile = Tile(0, 0)
+    # tile.drawSprite(screen)
 
     pygame.display.flip()
 
 def main():
+    board=[]
     screen = pygame.display.set_mode((BOARDWIDTH*32, BOARDHEIGHT*32))
-    printBoard(screen)
+    printBoard(screen, board)
 
     running = True
     while running:
@@ -64,7 +79,11 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                print(pygame.mouse.get_pos())
+                x = pygame.mouse.get_pos()[1]//32
+                y = pygame.mouse.get_pos()[0]//32
+                board[x][y].reveal()
+                board[x][y].drawSprite(screen)
+                pygame.display.flip()
 
 if __name__ == "__main__":
     main()
