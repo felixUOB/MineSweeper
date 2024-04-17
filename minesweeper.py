@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 
 BOARDWIDTH = 20
 BOARDHEIGHT = 20
@@ -24,7 +25,6 @@ class Tile():
     def drawSprite(self, screen):
         img = pygame.image.load("sprites/" + self.sprite + ".png").convert_alpha()
         screen.blit( img, (self.x*32, self.y*32))
-        print(self.sprite)
 
     def reveal(self):
         self.revealed = True
@@ -35,41 +35,54 @@ class Tile():
         else:
             self.sprite = "bg"
 
-        print(self.sprite)
-
     
 
 
 def printBoard(screen, board):
     pygame.display.set_caption('Minesweeper')
-    # tile = pygame.image.load("sprites/tile.png").convert_alpha()
-
-
-
-    # for x in range(BOARDWIDTH):
-    #     for y in range(BOARDHEIGHT):
-    #         screen.blit( tile, (x*32, y*32))
-
-    
 
     for i in range(BOARDHEIGHT):
         row = []
         for j in range(BOARDWIDTH):
-            row.append(Tile(j, i))
+            row.append(Tile(i, j))
             row[j].drawSprite(screen)
         board.append(row)
 
-    
-
-    # tile = Tile(0, 0)
-    # tile.drawSprite(screen)
-
     pygame.display.flip()
+
+def updateScreen(screen, board):
+    for x in range(BOARDWIDTH):
+        for y in range(BOARDHEIGHT):
+            board[x][y].drawSprite(screen)
+            
+#def revealAll(board):
+    
+def generateMines(board, mines):
+    while(mines > 0):
+        x = np.random.randint(0,BOARDWIDTH)
+        y = np.random.randint(0,BOARDHEIGHT)
+
+        if (board[x][y].revealed == False and board[x][y].mine == False):
+            for xs in range(x - 1, x + 2):
+                for ys in range(y - 1, y + 2):
+                    if(xs != x or ys != y):
+                        if((xs >= 0 and xs < BOARDWIDTH) and (ys >= 0 and ys < BOARDHEIGHT)):
+                            print(xs, ", ", ys)
+                            board[xs][ys].incrementNum()
+                    
+                    
+            board[x][y].makeMine()
+            # print(x, ", ", y)
+            mines -= 1
+        
+    
 
 def main():
     board=[]
     screen = pygame.display.set_mode((BOARDWIDTH*32, BOARDHEIGHT*32))
     printBoard(screen, board)
+
+    generateMines(board, 20)
 
     running = True
     while running:
@@ -79,11 +92,12 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                x = pygame.mouse.get_pos()[1]//32
-                y = pygame.mouse.get_pos()[0]//32
+                x = pygame.mouse.get_pos()[0]//32
+                y = pygame.mouse.get_pos()[1]//32
                 board[x][y].reveal()
                 board[x][y].drawSprite(screen)
                 pygame.display.flip()
+                
 
 if __name__ == "__main__":
     main()
