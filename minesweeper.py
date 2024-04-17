@@ -10,9 +10,14 @@ class Tile():
         self.sprite = "tile"
         self.mine = False
         self.num = 0
+        self.flag = False
         self.x = x
         self.y = y
     
+    def placeFlag(self):
+        self.flag = True
+        self.sprite = "flag"
+
     def makeMine(self):
         self.mine = True
 
@@ -74,9 +79,7 @@ def generateMines(board, mines, startx, starty):
             # print(x, ", ", y)
             mines -= 1
         
-'''
-8 way flood fill
-'''
+
 def floodFill(screen, board, x, y):
     if(x < 0 or x >= BOARDWIDTH or y < 0 or y >= BOARDHEIGHT):
         return
@@ -111,12 +114,16 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x = pygame.mouse.get_pos()[0]//32
                 y = pygame.mouse.get_pos()[1]//32
-                if (not firstMoveMade): 
-                    generateMines(board, 20, x, y)
-                    firstMoveMade = True
-                # board[x][y].reveal()
-                floodFill(screen, board, x, y)
+                if(event.button == 1):     
+                    if (not firstMoveMade): 
+                        generateMines(board, 20, x, y)
+                        firstMoveMade = True
+                    floodFill(screen, board, x, y)
+                if(event.button == 3):
+                    board[x][y].placeFlag()
+                    board[x][y].drawSprite(screen)
                 pygame.display.flip()
+
                 
 
                 
