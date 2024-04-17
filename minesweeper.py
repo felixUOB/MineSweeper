@@ -15,8 +15,12 @@ class Tile():
         self.y = y
     
     def placeFlag(self):
-        self.flag = True
-        self.sprite = "flag"
+        if(self.flag == True):
+            self.flag = False
+            self.sprite = "tile"
+        elif(self.flag == False):    
+            self.flag = True
+            self.sprite = "flag"
 
     def makeMine(self):
         self.mine = True
@@ -102,27 +106,39 @@ def main():
     screen = pygame.display.set_mode((BOARDWIDTH*32, BOARDHEIGHT*32))
     printBoard(screen, board)
 
+    clock = pygame.time.Clock()
+
     firstMoveMade = False
 
     running = True
+    gameOver = False
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x = pygame.mouse.get_pos()[0]//32
-                y = pygame.mouse.get_pos()[1]//32
-                if(event.button == 1):     
-                    if (not firstMoveMade): 
-                        generateMines(board, 20, x, y)
-                        firstMoveMade = True
-                    floodFill(screen, board, x, y)
-                if(event.button == 3):
-                    board[x][y].placeFlag()
-                    board[x][y].drawSprite(screen)
+            
+            if (gameOver == False):
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x = pygame.mouse.get_pos()[0]//32
+                    y = pygame.mouse.get_pos()[1]//32
+                    if(event.button == 1):     
+                        if (not firstMoveMade): 
+                            generateMines(board, 20, x, y)
+                            firstMoveMade = True
+                        if (board[x][y].mine == True):
+                            board[x][y].reveal()
+                            board[x][y].drawSprite(screen)
+                            gameOver = True
+                        else:
+                            floodFill(screen, board, x, y)
+                        
+                    if(event.button == 3):
+                        board[x][y].placeFlag()
+                        board[x][y].drawSprite(screen)            
                 pygame.display.flip()
+        clock.tick(30)
 
                 
 
