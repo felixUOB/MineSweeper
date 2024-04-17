@@ -57,17 +57,16 @@ def updateScreen(screen, board):
             
 #def revealAll(board):
     
-def generateMines(board, mines):
+def generateMines(board, mines, startx, starty):
     while(mines > 0):
         x = np.random.randint(0,BOARDWIDTH)
         y = np.random.randint(0,BOARDHEIGHT)
 
-        if (board[x][y].revealed == False and board[x][y].mine == False):
+        if (board[x][y].revealed == False and board[x][y].mine == False and (x != startx or y != starty)):
             for xs in range(x - 1, x + 2):
                 for ys in range(y - 1, y + 2):
                     if(xs != x or ys != y):
                         if((xs >= 0 and xs < BOARDWIDTH) and (ys >= 0 and ys < BOARDHEIGHT)):
-                            print(xs, ", ", ys)
                             board[xs][ys].incrementNum()
                     
                     
@@ -75,6 +74,24 @@ def generateMines(board, mines):
             # print(x, ", ", y)
             mines -= 1
         
+'''
+8 way flood fill
+'''
+def floodFill(screen, board, x, y):
+    if(x < 0 or x >= BOARDWIDTH or y < 0 or y >= BOARDHEIGHT):
+        return
+    if(board[x][y].revealed == True):
+        return
+    board[x][y].reveal()
+    board[x][y].drawSprite(screen)
+    if(board[x][y].num > 0):
+        return
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if(i != 0 or j != 0):
+                floodFill(screen, board, x + i, y + j)
+
+
     
 
 def main():
@@ -82,7 +99,7 @@ def main():
     screen = pygame.display.set_mode((BOARDWIDTH*32, BOARDHEIGHT*32))
     printBoard(screen, board)
 
-    generateMines(board, 20)
+    firstMoveMade = False
 
     running = True
     while running:
@@ -94,9 +111,14 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x = pygame.mouse.get_pos()[0]//32
                 y = pygame.mouse.get_pos()[1]//32
-                board[x][y].reveal()
-                board[x][y].drawSprite(screen)
+                if (not firstMoveMade): 
+                    generateMines(board, 20, x, y)
+                    firstMoveMade = True
+                # board[x][y].reveal()
+                floodFill(screen, board, x, y)
                 pygame.display.flip()
+                
+
                 
 
 if __name__ == "__main__":
