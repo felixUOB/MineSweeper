@@ -4,7 +4,7 @@ import numpy as np
 # Constants for the board size and mine number
 BOARDWIDTH = 20
 BOARDHEIGHT = 20
-MINES = 20
+MINES = 70
 
 
 
@@ -28,7 +28,7 @@ class Tile():
         if(self.flag == True):
             self.flag = False
             self.sprite = "tile"
-        elif(self.flag == False):    
+        elif(self.flag == False and self.pressed == False and self.revealed == False):    
             self.flag = True
             self.sprite = "flag"
 
@@ -126,6 +126,43 @@ def floodFill(screen, board, x, y):
                 floodFill(screen, board, x + i, y + j)
 
 
+def pressSurrounding(screen, board, x, y):
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
+                if(board[x+i][y+j].revealed == False and board[x+i][y+j].flag == False):
+                    board[x+i][y+j].press()
+                    board[x+i][y+j].drawSprite(screen)
+
+def releaseSurrounding(screen, board, x, y):
+    # test number of flags
+    flags = 0
+
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
+                if(board[x+i][y+j].flag == True):
+                    flags += 1
+
+    if(flags == board[x][y].num):
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
+                    if(board[x+i][y+j].revealed == False and board[x+i][y+j].flag == False):
+                        if(board[x+i][y+j].mine == True):
+                            revealAll(screen, board)
+                            return True
+                        else:
+                            floodFill(screen, board, x+i, y+j)
+                            board[x+i][y+j].drawSprite(screen)
+    else:
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
+                    if(board[x+i][y+j].revealed == False and board[x+i][y+j].flag == False):
+                        board[x+i][y+j].release()
+                        board[x+i][y+j].drawSprite(screen)
+    return False
     
 # Main function
 def main():
@@ -160,8 +197,11 @@ def main():
                     if(event.button == 1):
                         clicked = True
                         if(board[x][y].revealed == False):
-                            board[x][y].press()
-                            board[x][y].drawSprite(screen)
+                            if(board[x][y].flag == False):
+                                board[x][y].press()
+                                board[x][y].drawSprite(screen)
+                        else:
+                            pressSurrounding(screen, board, x, y)
                     prevx = x
                     prevy = y
                 
@@ -172,11 +212,19 @@ def main():
                         x = pygame.mouse.get_pos()[0]//32
                         y = pygame.mouse.get_pos()[1]//32
                         if(board[prevx][prevy].revealed == False):
-                            board[prevx][prevy].release()
-                            board[prevx][prevy].drawSprite(screen)
+                            if(board[prevx][prevy].flag == False):
+                                board[prevx][prevy].release()
+                                board[prevx][prevy].drawSprite(screen)
+                        else:
+                            releaseSurrounding(screen, board, prevx, prevy)
+                            
                         if(board[x][y].revealed == False):
-                            board[x][y].press()
-                            board[x][y].drawSprite(screen)
+                            if(board[x][y].flag == False):
+                                board[x][y].press()
+                                board[x][y].drawSprite(screen)
+                        else:
+                            pressSurrounding(screen, board, x, y)
+                        
                         prevx = x
                         prevy = y
 
@@ -189,10 +237,13 @@ def main():
                         if (not firstMoveMade): 
                             generateMines(board, MINES, x, y)
                             firstMoveMade = True
-                        if (board[x][y].mine == True):
+                        if (board[x][y].mine == True and board[x][y].flag == False):
                             revealAll(board, screen)
                             gameOver = True
-                        else:
+                        elif (board[x][y].revealed == True):
+                            releaseSurrounding(screen, board, x, y)
+
+                        elif (board[x][y].flag == False):
                             floodFill(screen, board, x, y)
                     if(event.button == 3):
                         board[x][y].placeFlag()
