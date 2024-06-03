@@ -1,11 +1,20 @@
 import pygame
 import numpy as np
 
+LEFTCLICK = 1
+RIGHTCLICK = 3
+
 # Constants for the board size and mine number
 BOARDWIDTH = 20
 BOARDHEIGHT = 20
 MINES = 70
 
+
+# Current bugs:
+#  - x and y axis are mixed up somewhere and making a rectangular board will generate tiles in the wrong direction (off screen)
+#  - holding down a number tile with correct number of flags but in wrong positions crashes the game
+#  - holding down a number tile and then moving the cursor without lifting will activate the reveal surrounding function
+#    desired behaviour is it will only activate around the tile of which the cursor is released over
 
 
 # Tile object stores all data about a tile
@@ -37,6 +46,7 @@ class Tile():
         self.pressed = True
         self.sprite = "bg"
 
+    # Set tile clicked to false
     def release(self):
         self.pressed = False
         self.sprite = "tile"
@@ -80,6 +90,8 @@ def generateBoard(screen, board):
 
     pygame.display.flip()
 
+
+# reveals all tiles on the board
 def revealAll(board, screen):
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
@@ -112,39 +124,59 @@ def generateMines(board, mines, startx, starty):
         
 # Recursive function that reveals all adjacent empty tiles
 def floodFill(screen, board, x, y):
+
+    # check for edge cases
     if(x < 0 or x >= BOARDWIDTH or y < 0 or y >= BOARDHEIGHT):
         return
+    # if tile has been revealed already return
     if(board[x][y].revealed == True):
         return
+    
     board[x][y].reveal()
     board[x][y].drawSprite(screen)
+    
+    # if the current tile is a number then it is an edge of the flood fill so return
     if(board[x][y].num > 0):
         return
+    
+    # repeat the function on the 8 surrounding tiles
     for i in range(-1, 2):
         for j in range(-1, 2):
             if(i != 0 or j != 0):
                 floodFill(screen, board, x + i, y + j)
 
 
+# press the tiles surrounding x, y
 def pressSurrounding(screen, board, x, y):
     for i in range(-1, 2):
         for j in range(-1, 2):
+
+            # Check edge of board
             if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
+
+                # only press if tile is not already revealed or flagged
                 if(board[x+i][y+j].revealed == False and board[x+i][y+j].flag == False):
                     board[x+i][y+j].press()
                     board[x+i][y+j].drawSprite(screen)
 
+# will reveal tiles surrounding x, y if the no. of surrounding flags matches the no. on x, y
+# returns true when the game is over and false when it is not
 def releaseSurrounding(screen, board, x, y):
-    # test number of flags
-    flags = 0
 
+    # count the number of flags
+    flags = 0
     for i in range(-1, 2):
         for j in range(-1, 2):
             if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
                 if(board[x+i][y+j].flag == True):
                     flags += 1
 
+    # if flags match the number on the tile then perform floodfill on the surrounding tiles
     if(flags == board[x][y].num):
+
+        #######################
+        ### SOURCE OF A BUG ###
+        #######################
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
@@ -155,6 +187,8 @@ def releaseSurrounding(screen, board, x, y):
                         else:
                             floodFill(screen, board, x+i, y+j)
                             board[x+i][y+j].drawSprite(screen)
+
+    # else release all the tiles
     else:
         for i in range(-1, 2):
             for j in range(-1, 2):
@@ -191,10 +225,13 @@ def main():
             
             # While player has not hit a mine
             if (gameOver == False):
+
+                # calculations when mouse is clicked
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x = pygame.mouse.get_pos()[0]//32
                     y = pygame.mouse.get_pos()[1]//32
-                    if(event.button == 1):
+
+                    if(event.button == LEFTCLICK):
                         clicked = True
                         if(board[x][y].revealed == False):
                             if(board[x][y].flag == False):
@@ -206,18 +243,27 @@ def main():
                     prevy = y
                 
                     
-                
+                # when mouse is moved (these if statements could be swapped to optimise)
                 if event.type == pygame.MOUSEMOTION:
                     if(clicked == True):
                         x = pygame.mouse.get_pos()[0]//32
                         y = pygame.mouse.get_pos()[1]//32
+
+                        # release the old tile if it has not yet been revealed
                         if(board[prevx][prevy].revealed == False):
                             if(board[prevx][prevy].flag == False):
                                 board[prevx][prevy].release()
                                 board[prevx][prevy].drawSprite(screen)
+
+                        # release surrounding if tile has already been revealed
                         else:
+
+                            #######################
+                            ### SOURCE OF A BUG ###
+                            #######################
                             releaseSurrounding(screen, board, prevx, prevy)
                             
+                        # press the new tile
                         if(board[x][y].revealed == False):
                             if(board[x][y].flag == False):
                                 board[x][y].press()
@@ -228,11 +274,12 @@ def main():
                         prevx = x
                         prevy = y
 
-                    
+                # perform the actual actions on mouseup
                 if event.type == pygame.MOUSEBUTTONUP:
                     x = pygame.mouse.get_pos()[0]//32
                     y = pygame.mouse.get_pos()[1]//32
-                    if(event.button == 1): 
+
+                    if(event.button == LEFTCLICK): 
                         clicked = False    
                         if (not firstMoveMade): 
                             generateMines(board, MINES, x, y)
@@ -245,18 +292,21 @@ def main():
 
                         elif (board[x][y].flag == False):
                             floodFill(screen, board, x, y)
-                    if(event.button == 3):
+
+                    if(event.button == RIGHTCLICK):
                         board[x][y].placeFlag()
                         board[x][y].drawSprite(screen)
 
                 # Print display buffer to display         
                 pygame.display.flip()
+
+        #caps game to 60fps for consistency
         clock.tick(60)
 
                 
 
                 
-# 
+# if run as the main program (not a library)
 if __name__ == "__main__":
     main()
     pygame.quit()
