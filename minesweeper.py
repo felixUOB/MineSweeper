@@ -5,13 +5,12 @@ LEFTCLICK = 1
 RIGHTCLICK = 3
 
 # Constants for the board size and mine number
-BOARDWIDTH = 20
+BOARDWIDTH = 30
 BOARDHEIGHT = 20
 MINES = 70
 
 
 # Current bugs:
-#  - x and y axis are mixed up somewhere and making a rectangular board will generate tiles in the wrong direction (off screen)
 #  - holding down a number tile with correct number of flags but in wrong positions crashes the game
 #  - holding down a number tile and then moving the cursor without lifting will activate the reveal surrounding function
 #    desired behaviour is it will only activate around the tile of which the cursor is released over
@@ -81,12 +80,12 @@ def generateBoard(screen, board):
     pygame.display.set_caption('Minesweeper')
 
     # Create a 2D array of tile objects
-    for i in range(BOARDHEIGHT):
-        row = []
-        for j in range(BOARDWIDTH):
-            row.append(Tile(i, j))
-            row[j].drawSprite(screen)
-        board.append(row)
+    for i in range(BOARDWIDTH):
+        column = []
+        for j in range(BOARDHEIGHT):
+            column.append(Tile(i, j))
+            column[j].drawSprite(screen)
+        board.append(column)
 
     pygame.display.flip()
 
