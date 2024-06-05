@@ -10,10 +10,7 @@ BOARDHEIGHT = 20
 MINES = 70
 
 
-# Current bugs:
-#  - holding down a number tile with correct number of flags but in wrong positions crashes the game
-#  - holding down a number tile and then moving the cursor without lifting will activate the reveal surrounding function
-#    desired behaviour is it will only activate around the tile of which the cursor is released over
+
 
 
 # Tile object stores all data about a tile
@@ -160,7 +157,7 @@ def pressSurrounding(screen, board, x, y):
 
 # will reveal tiles surrounding x, y if the no. of surrounding flags matches the no. on x, y
 # returns true when the game is over and false when it is not
-def releaseSurrounding(screen, board, x, y):
+def releaseSurrounding(screen, board, x, y, held):
 
     # count the number of flags
     flags = 0
@@ -171,17 +168,13 @@ def releaseSurrounding(screen, board, x, y):
                     flags += 1
 
     # if flags match the number on the tile then perform floodfill on the surrounding tiles
-    if(flags == board[x][y].num):
-
-        #######################
-        ### SOURCE OF A BUG ###
-        #######################
+    if(flags == board[x][y].num and not held):
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
                     if(board[x+i][y+j].revealed == False and board[x+i][y+j].flag == False):
                         if(board[x+i][y+j].mine == True):
-                            revealAll(screen, board)
+                            revealAll(board, screen)
                             return True
                         else:
                             floodFill(screen, board, x+i, y+j)
@@ -256,11 +249,7 @@ def main():
 
                         # release surrounding if tile has already been revealed
                         else:
-
-                            #######################
-                            ### SOURCE OF A BUG ###
-                            #######################
-                            releaseSurrounding(screen, board, prevx, prevy)
+                            releaseSurrounding(screen, board, prevx, prevy, True)
                             
                         # press the new tile
                         if(board[x][y].revealed == False):
@@ -287,7 +276,7 @@ def main():
                             revealAll(board, screen)
                             gameOver = True
                         elif (board[x][y].revealed == True):
-                            releaseSurrounding(screen, board, x, y)
+                            releaseSurrounding(screen, board, x, y, False)
 
                         elif (board[x][y].flag == False):
                             floodFill(screen, board, x, y)
