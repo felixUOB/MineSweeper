@@ -13,6 +13,11 @@ import numpy
 # MAIN WILL RUN A TEST PROGRAM THAT PASSES THE XOR PROBLEM THROUGH THE NETWORK
 # After this library has been created we need to edit for cnn for the minesweeper application
 
+def sigmoid(x):
+    return 1.0/(1.0 + pow(numpy.e, -x))
+    
+def dsigmoid(x):
+    return sigmoid(x) * (1 - sigmoid(x))
 class NeuralNet:
 
     #need to establish no. of layers and make an array for each of those, and then weights and bias matrices for each connection between layers
@@ -49,10 +54,8 @@ class NeuralNet:
             print(self.weights[i])
         print()
 
-
-    def activation(self):
-        # Sigmoid function
-        print("Implement me!")
+    # 1/1+e^(-x)
+    
 
     def forward(self):
         print("Implement me!")
@@ -75,6 +78,7 @@ def main():
 
     nn = NeuralNet(3, 3, 5, 5, 1)
     nn.printNetwork()
+    print(sigmoid(0.0))
 
     running = True
     while running:
