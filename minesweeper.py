@@ -181,7 +181,7 @@ def releaseSurrounding(screen, board, x, y):
                 if(x + i >= 0 and x + i < BOARDWIDTH and y + j >= 0 and y + j < BOARDHEIGHT):
                     if(board[x+i][y+j].revealed == False and board[x+i][y+j].flag == False):
                         if(board[x+i][y+j].mine == True):
-                            revealAll(screen, board)
+                            revealAll(board, screen)
                             return True
                         else:
                             floodFill(screen, board, x+i, y+j)
