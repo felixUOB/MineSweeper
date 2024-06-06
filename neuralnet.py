@@ -18,6 +18,8 @@ def sigmoid(x):
     
 def dsigmoid(x):
     return sigmoid(x) * (1 - sigmoid(x))
+
+
 class NeuralNet:
 
     #need to establish no. of layers and make an array for each of those, and then weights and bias matrices for each connection between layers
@@ -36,7 +38,7 @@ class NeuralNet:
         self.weights.append(numpy.matlib.rand(args[self.layers - 1], args[self.layers - 2]))
         
     
-    # prints the nodes of the network input - middle layers - output
+    # prints the nodes of the network input - middle layers - output then biases and weights
     def printNetwork(self):
         print(self.input)
         print()
@@ -54,12 +56,11 @@ class NeuralNet:
             print(self.weights[i])
         print()
 
-    # 1/1+e^(-x)
-    
-
+    # pass inputs through the network and return the outputs
     def forward(self):
         print("Implement me!")
 
+    # back propogation on a given set of training datas
     def train(self):
         print("Implement me!")
         
