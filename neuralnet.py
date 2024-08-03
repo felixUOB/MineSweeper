@@ -14,7 +14,7 @@ import numpy
 # After this library has been created we need to edit for cnn for the minesweeper application
 
 def sigmoid(x):
-    return 1.0/(1.0 + pow(numpy.e, -x))
+    return 1.0/(1.0 + numpy.exp(-x))
     
 def dsigmoid(x):
     return sigmoid(x) * (1 - sigmoid(x))
@@ -31,11 +31,11 @@ class NeuralNet:
         self.bias = []
         self.weights = [] 
         for i in range(1, self.layers - 1):
-            self.weights.append(numpy.matlib.rand(args[i], args[i - 1]))
-            self.bias.append([1] * args[i])            
+            self.weights.append(numpy.random.uniform(-0.5, 0.5, (args[i], args[i - 1])))
+            self.bias.append(numpy.zeros((args[i], 1)))            
             self.middleLayers.append([0] * args[i])
-        self.bias.append([1] * args[self.layers - 1])
-        self.weights.append(numpy.matlib.rand(args[self.layers - 1], args[self.layers - 2]))
+        self.bias.append(numpy.zeros((args[self.layers - 1], 1)))
+        self.weights.append(numpy.random.uniform(-0.5, 0.5, (args[self.layers - 1], args[self.layers - 2])))
         
     
     # prints the nodes of the network input - middle layers - output then biases and weights
@@ -57,8 +57,23 @@ class NeuralNet:
         print()
 
     # pass inputs through the network and return the outputs
-    def forward(self):
+    def forward(self, inputs):
         print("Implement me!")
+        self.input = numpy.matrix(inputs).T
+        print(self.input)
+        layer2 = self.bias[0] + self.weights[0] @ self.input
+        layer2 = sigmoid(layer2)
+        print(layer2)
+        layer3 = self.bias[1] + self.weights[1] @ layer2
+        layer3 = sigmoid(layer3)
+        print(layer3)
+        layer4 = self.bias[2] + self.weights[2] @ layer3
+        layer4 = sigmoid(layer4)
+        print(layer4)
+        layer5 = self.bias[3] + self.weights[3] @ layer4
+        layer5 = sigmoid(layer5)
+
+        return layer5
 
     # back propogation on a given set of training datas
     def train(self):
@@ -80,6 +95,8 @@ def main():
     nn = NeuralNet(3, 3, 5, 5, 1)
     nn.printNetwork()
     print(sigmoid(0.0))
+    inputs = [1, 2, 3]
+    print(nn.forward(inputs))
 
     running = True
     while running:
