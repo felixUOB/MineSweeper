@@ -59,7 +59,7 @@ class NeuralNet:
     # pass inputs through the network and return the outputs
     def forward(self, inputs):
         self.input = numpy.matrix(inputs).T
-        for i in range(0, self.layers - 2):
+        for i in range(0, self.layers - 1):
             if i == 0:
                 nextLayerIn = self.input
             currentLayer = self.bias[i] + self.weights[i] @ nextLayerIn
