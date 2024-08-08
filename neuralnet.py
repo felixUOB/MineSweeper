@@ -58,22 +58,29 @@ class NeuralNet:
 
     # pass inputs through the network and return the outputs
     def forward(self, inputs):
-        print("Implement me!")
         self.input = numpy.matrix(inputs).T
-        print(self.input)
-        layer2 = self.bias[0] + self.weights[0] @ self.input
-        layer2 = sigmoid(layer2)
-        print(layer2)
-        layer3 = self.bias[1] + self.weights[1] @ layer2
-        layer3 = sigmoid(layer3)
-        print(layer3)
-        layer4 = self.bias[2] + self.weights[2] @ layer3
-        layer4 = sigmoid(layer4)
-        print(layer4)
-        layer5 = self.bias[3] + self.weights[3] @ layer4
-        layer5 = sigmoid(layer5)
+        for i in range(0, self.layers - 2):
+            if i == 0:
+                nextLayerIn = self.input
+            currentLayer = self.bias[i] + self.weights[i] @ nextLayerIn
+            nextLayerIn = sigmoid(currentLayer)
+            print(nextLayerIn)
+        return nextLayerIn
 
-        return layer5
+        # print(self.input)
+        # layer2 = self.bias[0] + self.weights[0] @ self.input
+        # layer2 = sigmoid(layer2)
+        # print(layer2)
+        # layer3 = self.bias[1] + self.weights[1] @ layer2
+        # layer3 = sigmoid(layer3)
+        # print(layer3)
+        # layer4 = self.bias[2] + self.weights[2] @ layer3
+        # layer4 = sigmoid(layer4)
+        # print(layer4)
+        # layer5 = self.bias[3] + self.weights[3] @ layer4
+        # layer5 = sigmoid(layer5)
+
+        # return layer5
 
     # back propogation on a given set of training datas
     def train(self):
