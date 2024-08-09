@@ -14,6 +14,9 @@ import random
 # MAIN WILL RUN A TEST PROGRAM THAT PASSES THE XOR PROBLEM THROUGH THE NETWORK
 # After this library has been created we need to edit for cnn for the minesweeper application
 
+WIDTH = 400
+HEIGHT = 400
+
 def sigmoid(x):
     return 1.0/(1.0 + numpy.exp(-x))
     
@@ -158,7 +161,7 @@ class NeuralNet:
 def main():
     background_colour = (234, 212, 252)
 
-    screen = pygame.display.set_mode((300, 300))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     pygame.display.set_caption('Test')
 
@@ -171,9 +174,9 @@ def main():
     inputs = [0, 0]
     # nn.forward(inputs)
     
-    for i in range(0, 10000):
-        random.shuffle(training_data)
-        nn.train([d['inputs'] for d in training_data], [d['outputs'] for d in training_data])
+    # for i in range(0, 100000):
+    #     random.shuffle(training_data)
+    #     nn.train([d['inputs'] for d in training_data], [d['outputs'] for d in training_data])
 
     print()
     print(nn.forward([0,0]))
@@ -187,6 +190,17 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        
+        for i in range(0, 50):
+            random.shuffle(training_data)
+            nn.train([d['inputs'] for d in training_data], [d['outputs'] for d in training_data])
+
+        for x in range(0,WIDTH//10):
+            for y in range(0,HEIGHT//10):
+                colour = nn.forward([(x*10)/WIDTH, (y*10)/HEIGHT])[0][0]*255
+                pygame.draw.rect(screen, (colour, colour, colour), pygame.Rect(x*10,y*10,(x+1)*10,(y+1)*10))
+        
+        pygame.display.flip()
 
 if __name__ == "__main__":
     main()
