@@ -1,6 +1,7 @@
 import numpy.matlib
 import pygame
 import numpy
+import random
 
 # Need a matrix library
 
@@ -19,11 +20,29 @@ def sigmoid(x):
 def dsigmoid(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
+training_data = [{
+    "inputs": [0, 0],
+    "outputs": [0]
+  },
+  {
+    "inputs": [0, 1],
+    "outputs": [1]
+  },
+  {
+    "inputs": [1, 0],
+    "outputs": [1]
+  },
+  {
+    "inputs": [1, 1],
+    "outputs": [0]
+  }
+]
 
 class NeuralNet:
 
     #need to establish no. of layers and make an array for each of those, and then weights and bias matrices for each connection between layers
     def __init__(self, *args):
+        self.learningRate = 0.1
         self.layers = len(args)
         self.input = [0] * args[0]
         self.output = [0] * args[self.layers - 1]
@@ -55,16 +74,33 @@ class NeuralNet:
         for i in range(0, self.layers - 1):
             print(self.weights[i])
         print()
+        print("INPUTS:")
+        print([d['inputs'] for d in training_data])
+        print()
+        print("OUTPUTS:")
+        print([d['outputs'] for d in training_data])
+        print()
 
     # pass inputs through the network and return the outputs
     def forward(self, inputs):
         self.input = numpy.matrix(inputs).T
+        # print("Layer 1")
+        # print(self.input)
+        # print()
         for i in range(0, self.layers - 1):
             if i == 0:
                 nextLayerIn = self.input
             currentLayer = self.bias[i] + self.weights[i] @ nextLayerIn
             nextLayerIn = sigmoid(currentLayer)
-            print(nextLayerIn)
+            if(i < self.layers - 2):
+                self.middleLayers[i] = nextLayerIn
+            # print("Layer ", i + 2)
+            # print(nextLayerIn)
+            # print()
+
+        # print("Middle layers: ")
+        # for l in self.middleLayers:
+            # print(l)
         return nextLayerIn
 
         # print(self.input)
@@ -83,9 +119,40 @@ class NeuralNet:
         # return layer5
 
     # back propogation on a given set of training datas
-    def train(self):
-        print("Implement me!")
-        
+    def train(self, inputs, targets):
+
+        for i in range(0, len(inputs)):
+
+            # dC/dW = previousLayer * (currLayer * (1 - currLayer)) * (targets - output)
+            # dC/dB =                 (currLayer * (1 - currLayer)) * (targets - output)
+
+            # get the error (targets - output)
+            outputs = self.forward(inputs[i])
+            outputErrors = targets[i] - outputs
+
+            # (currLayer * (1 - currLayer)) * (targets - output) * learningRate
+            outputGradient = numpy.multiply(( numpy.multiply(outputs , (1 - outputs)) ) , outputErrors)
+            outputGradient = numpy.multiply(outputGradient, self.learningRate)
+
+            # weights += previousLayer * (currLayer * (1 - currLayer)) * (targets - output) * learningRate
+            self.weights[1] += outputGradient @ self.middleLayers[0].T
+
+            # bias += (currLayer * (1 - currLayer)) * (targets - output) * learningRate
+            self.bias[1] += outputGradient
+
+
+            # pass back to get hidden layer errors
+            hiddenError = self.weights[1].T @ outputErrors
+
+            # same formula for gradient
+            hiddenGradient = numpy.multiply(( numpy.multiply(self.middleLayers[0] , (1 - self.middleLayers[0])) ) , hiddenError)
+            hiddenGradient = numpy.multiply(hiddenGradient, self.learningRate)
+
+            # same method for incrementing weights and biases
+            self.weights[0] += hiddenGradient @ self.input.T
+            self.bias[0] += hiddenGradient
+
+
 # Can make some more generic training functions here, e.g train epoch, test etc.
 
 def main():
@@ -99,12 +166,22 @@ def main():
 
     pygame.display.flip()
 
-    nn = NeuralNet(3, 3, 5, 5, 1)
+    nn = NeuralNet(2, 4, 1)
     nn.printNetwork()
-    print(sigmoid(0.0))
-    inputs = [1, 2, 3]
-    print(nn.forward(inputs))
+    inputs = [0, 0]
+    # nn.forward(inputs)
+    
+    for i in range(0, 10000):
+        random.shuffle(training_data)
+        nn.train([d['inputs'] for d in training_data], [d['outputs'] for d in training_data])
 
+    print()
+    print(nn.forward([0,0]))
+    print(nn.forward([0,1]))
+    print(nn.forward([1,0]))
+    print(nn.forward([1,1]))
+    print()
+    nn.printNetwork()
     running = True
     while running:
         for event in pygame.event.get():
