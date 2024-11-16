@@ -10,5 +10,5 @@ Currently we have a working neural network library that is able to create and tr
 - Create own matrix maths library
 
 ## Inspiration:
-A lot of the maths from the neural network was taken from the 3Blue1Brown series on neural networks:\
+A lot of the maths for the neural network was taken from the 3Blue1Brown series on neural networks:\
 https://youtu.be/aircAruvnKk?si=yxUSZd2SZmCPK8t1 (Episodes 1-4)
