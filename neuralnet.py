@@ -39,6 +39,7 @@ training_data = [{
     "inputs": [1, 1],
     "outputs": [0]
   }
+  
 ]
 
 class NeuralNet:
@@ -129,31 +130,49 @@ class NeuralNet:
             # dC/dW = previousLayer * (currLayer * (1 - currLayer)) * (targets - output)
             # dC/dB =                 (currLayer * (1 - currLayer)) * (targets - output)
 
-            # get the error (targets - output)
-            outputs = self.forward(inputs[i])
-            outputErrors = targets[i] - outputs
+            
+                # get the error (targets - output)
+                outputs = self.forward(inputs[i])
 
-            # (currLayer * (1 - currLayer)) * (targets - output) * learningRate
-            outputGradient = numpy.multiply(( numpy.multiply(outputs , (1 - outputs)) ) , outputErrors)
-            outputGradient = numpy.multiply(outputGradient, self.learningRate)
+                outputErrors = targets[i] - outputs
+                hiddenError = outputErrors
 
-            # weights += previousLayer * (currLayer * (1 - currLayer)) * (targets - output) * learningRate
-            self.weights[1] += outputGradient @ self.middleLayers[0].T
+                # (currLayer * (1 - currLayer)) * (targets - output) * learningRate
+                outputGradient = numpy.multiply(( numpy.multiply(outputs , (1 - outputs)) ) , outputErrors)
+                outputGradient = numpy.multiply(outputGradient, self.learningRate)
 
-            # bias += (currLayer * (1 - currLayer)) * (targets - output) * learningRate
-            self.bias[1] += outputGradient
+                # weights += previousLayer * (currLayer * (1 - currLayer)) * (targets - output) * learningRate
+                self.weights[self.layers - 2] += outputGradient @ self.middleLayers[self.layers - 3].T
+                # bias += (currLayer * (1 - currLayer)) * (targets - output) * learningRate
+                self.bias[self.layers - 2] += outputGradient
 
 
-            # pass back to get hidden layer errors
-            hiddenError = self.weights[1].T @ outputErrors
+                # Middle layers
+                for j in range( self.layers - 3, 0, -1):
+                    # pass back to get hidden layer errors
+                    hiddenError = self.weights[j+1].T @ hiddenError
 
-            # same formula for gradient
-            hiddenGradient = numpy.multiply(( numpy.multiply(self.middleLayers[0] , (1 - self.middleLayers[0])) ) , hiddenError)
-            hiddenGradient = numpy.multiply(hiddenGradient, self.learningRate)
+                    # same formula for gradient
+                    hiddenGradient = numpy.multiply(( numpy.multiply(self.middleLayers[j] , (1 - self.middleLayers[j])) ) , hiddenError)
+                    hiddenGradient = numpy.multiply(hiddenGradient, self.learningRate)
 
-            # same method for incrementing weights and biases
-            self.weights[0] += hiddenGradient @ self.input.T
-            self.bias[0] += hiddenGradient
+                    # same method for incrementing weights and biases
+                    self.weights[j] += hiddenGradient @ self.middleLayers[j-1].T
+                    self.bias[j] += hiddenGradient
+
+
+                # Final hidden layer calculation
+
+                # pass back to get hidden layer errors
+                hiddenError = self.weights[1].T @ hiddenError
+
+                # same formula for gradient
+                hiddenGradient = numpy.multiply(( numpy.multiply(self.middleLayers[0] , (1 - self.middleLayers[0])) ) , hiddenError)
+                hiddenGradient = numpy.multiply(hiddenGradient, self.learningRate)
+
+                # same method for incrementing weights and biases
+                self.weights[0] += hiddenGradient @ self.input.T
+                self.bias[0] += hiddenGradient
 
 
 # Can make some more generic training functions here, e.g train epoch, test etc.
@@ -169,7 +188,7 @@ def main():
 
     pygame.display.flip()
 
-    nn = NeuralNet(2, 4, 1)
+    nn = NeuralNet(2, 25, 30, 40, 1)
     nn.printNetwork()
     inputs = [0, 0]
     # nn.forward(inputs)
@@ -178,13 +197,13 @@ def main():
     #     random.shuffle(training_data)
     #     nn.train([d['inputs'] for d in training_data], [d['outputs'] for d in training_data])
 
-    print()
-    print(nn.forward([0,0]))
-    print(nn.forward([0,1]))
-    print(nn.forward([1,0]))
-    print(nn.forward([1,1]))
-    print()
-    nn.printNetwork()
+    # print()
+    # print(nn.forward([0,0]))
+    # print(nn.forward([0,1]))
+    # print(nn.forward([1,0]))
+    # print(nn.forward([1,1]))
+    # print()
+    # nn.printNetwork()
     running = True
     while running:
         for event in pygame.event.get():
