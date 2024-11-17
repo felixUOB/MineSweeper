@@ -9,6 +9,12 @@ https://youtu.be/aircAruvnKk?si=yxUSZd2SZmCPK8t1 (Episodes 1-4)
 ## Current Progress:
 Currently we have a working neural network library that is able to create and train a network with any amount of layers and nodes. It currently tests this with the XOR problem. We also have a mock version of minesweeper made in python with pygame.
 
+
+
+| ![xor](https://github.com/user-attachments/assets/4de2b7f6-6344-49af-bf7f-d5f58f0d31c3) | 
+|:--:| 
+| *Neural network of shape 2-8-8-1 with learning rate 0.05 solving the xor problem* |
+
 ## Next steps:
 - Add convolutional layers and test them on the MNIST set
 - Create own matrix maths library
